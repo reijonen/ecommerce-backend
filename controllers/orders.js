@@ -5,8 +5,26 @@ const getToken = require("../utils/getToken");
 const jwt = require("jsonwebtoken");
 
 ordersRouter.get("/", async (req, res) => {
-  const orders = await Order.find({}).populate("user", { name: 1, email: 1 });
-  res.json(orders.map((o) => o.toJSON()));
+  const token = getToken.getToken(req);
+  const decodedToken = jwt.verify(token, process.env.SECRET);
+  if (!token || !decodedToken.id) {
+    return res.status(401).json({ error: "unauthorized" });
+  } else {
+    console.log(decodedToken);
+    const user = await User.findById(decodedToken.id);
+    if (user.privilege === 2 || user.privilege === 1) {
+      const orders = await Order.find({}).populate("user", {
+        name: 1,
+        email: 1,
+      });
+      res.json(orders.map((o) => o.toJSON()));
+    } else {
+      const orders = await Order.find({
+        user: decodedToken.id,
+      }).populate("user", { name: 1, email: 1 });
+      res.json(orders.map((o) => o.toJSON()));
+    }
+  }
 });
 
 ordersRouter.get("/:id", async (req, res) => {
@@ -21,7 +39,6 @@ ordersRouter.get("/:id", async (req, res) => {
       .populate("user", { name: 1, email: 1 })
       .populate("products", { name: 1, price: 1 });
 
-    console.log(user, order);
     if (
       user.privilege === 1 ||
       user.privilege === 2 ||
