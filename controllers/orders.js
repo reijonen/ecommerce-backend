@@ -10,7 +10,6 @@ ordersRouter.get("/", async (req, res) => {
   if (!token || !decodedToken.id) {
     return res.status(401).json({ error: "unauthorized" });
   } else {
-    console.log(decodedToken);
     const user = await User.findById(decodedToken.id);
     if (user.privilege === 2 || user.privilege === 1) {
       const orders = await Order.find({}).populate("user", {
@@ -33,7 +32,6 @@ ordersRouter.get("/:id", async (req, res) => {
   if (!token || !decodedToken.id) {
     return res.status(401).json({ error: "unauthorized" });
   } else {
-    console.log(decodedToken);
     const user = await User.findById(decodedToken.id);
     const order = await Order.findById(req.params.id)
       .populate("user", { name: 1, email: 1 })
