@@ -36,7 +36,7 @@ productsRouter.post("/", async (req, res) => {
             console.log(e);
           }
         } else {
-          categories.push(_tmp);
+          categories.push(tmp._id);
         }
       });
       const product = new Product({
@@ -48,8 +48,18 @@ productsRouter.post("/", async (req, res) => {
         imageUrl: body.imageUrl,
       });
       const savedProduct = await product.save();
+      //maybe????
       categories.map(async (c) => {
         try {
+          const tmp = await Category.findOneById(c);
+          Category.findByIdAndUpdate(
+            c,
+            {
+              name: tmp.name,
+              products: [...tmp.prodtucts, savedProduct._id],
+            },
+            { new: true }
+          );
         } catch (e) {
           console.log(e);
         }
